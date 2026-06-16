@@ -1,5 +1,4 @@
 import { usePauseM, useRemoveM, useResumeM } from "../hooks/api";
-import { buttonClass, dangerButtonClass } from "../styles";
 import type { Torrent } from "../types";
 import {
   formatBytes,
@@ -8,6 +7,7 @@ import {
   formatRatio,
   formatStatus,
 } from "../utils/format";
+import { Button } from "./ui/Button";
 import Panel from "./ui/Panel";
 
 export function TorrentList({
@@ -82,8 +82,7 @@ export function TorrentList({
                 className="flex flex-wrap items-center gap-2"
                 onClick={(event) => event.stopPropagation()}
               >
-                <button
-                  className={buttonClass}
+                <Button
                   type="button"
                   disabled={isBusy}
                   onClick={() =>
@@ -93,17 +92,17 @@ export function TorrentList({
                   }
                 >
                   {canPause ? "Пауза" : "Старт"}
-                </button>
-                <button
-                  className={dangerButtonClass}
+                </Button>
+                <Button
+                  variant="danger"
                   type="button"
                   disabled={isBusy}
                   onClick={() => removeM.mutate({ id: torrent.id, deleteLocalData: false })}
                 >
                   Убрать
-                </button>
-                <button
-                  className={dangerButtonClass}
+                </Button>
+                <Button
+                  variant="danger"
                   type="button"
                   disabled={isBusy}
                   onClick={() => {
@@ -113,7 +112,7 @@ export function TorrentList({
                   }}
                 >
                   Удалить файлы
-                </button>
+                </Button>
               </div>
             </div>
           </article>

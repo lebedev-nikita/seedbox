@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useSetDownloadDirM, useStorageSettings, useTorrents } from "../hooks/api";
-import { primaryButtonClass } from "../styles";
 import { trpc } from "../trpc";
 import { StatusMessage } from "./StatusMessage";
 import { StorageSelector } from "./StorageSelector";
 import { TorrentDetails } from "./TorrentDetails";
 import { TorrentList } from "./TorrentList";
+import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 
 export default function App() {
@@ -98,13 +98,13 @@ export default function App() {
             placeholder="magnet:?xt=urn:btih:..."
             aria-label="Magnet-ссылка"
           />
-          <button
-            className={primaryButtonClass}
+          <Button
+            variant="primary"
             type="submit"
             disabled={addMagnetM.isPending || !magnet.trim()}
           >
             {addMagnetM.isPending ? "Добавление" : "Добавить"}
-          </button>
+          </Button>
         </form>
         <label className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-slate-800 transition hover:border-teal-700">
           <span>{uploading ? "Загрузка" : "Torrent-файл"}</span>

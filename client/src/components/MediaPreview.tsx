@@ -1,6 +1,6 @@
-import { buttonClass } from "../styles";
 import type { TorrentFile } from "../types";
 import { getExtension } from "../utils/media";
+import { Button } from "./ui/Button";
 
 export function MediaPreview({
   torrentId,
@@ -18,9 +18,9 @@ export function MediaPreview({
     <div className="grid gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-3">
       <div className="flex items-center justify-between gap-3">
         <strong className="min-w-0 wrap-anywhere text-slate-950">{file.name}</strong>
-        <button className={buttonClass} type="button" onClick={onClose}>
+        <Button type="button" onClick={onClose}>
           Закрыть
-        </button>
+        </Button>
       </div>
       {["jpg", "jpeg", "png", "gif", "webp"].includes(extension) ?
         <img className="max-h-[420px] w-full rounded-md bg-slate-950" src={src} alt={file.name} />

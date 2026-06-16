@@ -1,8 +1,8 @@
-import { buttonClass } from "../styles";
 import type { TorrentFile } from "../types";
 import type { FileTreeNode } from "../utils/fileTree";
 import { formatBytes, formatPercent } from "../utils/format";
 import { isPreviewable } from "../utils/media";
+import { Button, ButtonLink } from "./ui/Button";
 
 export function FileNode({
   node,
@@ -42,17 +42,17 @@ export function FileNode({
       <div className="flex flex-wrap items-center gap-2">
         {isPreviewable(file.name) && (
           <>
-            <button className={buttonClass} type="button" onClick={() => onPreview(file)}>
+            <Button type="button" onClick={() => onPreview(file)}>
               Открыть
-            </button>
-            <a className={buttonClass} href={streamUrl} target="_blank" rel="noreferrer">
+            </Button>
+            <ButtonLink href={streamUrl} target="_blank" rel="noreferrer">
               В новой вкладке
-            </a>
+            </ButtonLink>
           </>
         )}
-        <a className={buttonClass} href={downloadUrl}>
+        <ButtonLink href={downloadUrl}>
           Скачать
-        </a>
+        </ButtonLink>
       </div>
     </div>
   );
