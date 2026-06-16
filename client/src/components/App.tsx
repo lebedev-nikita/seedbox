@@ -28,13 +28,6 @@ export default function App() {
 
   const setDownloadDirM = useSetDownloadDirM();
 
-  // const removeM = trpc.torrents.remove.useMutation({
-  //   onSuccess: async () => {
-  //     setSelectedTorrentId(null);
-  //     await utils.torrents.list.invalidate();
-  //   },
-  // });
-
   const selectedTorrent =
     torrents.data?.find((torrent) => torrent.id === selectedTorrentId) ?? null;
 
@@ -98,11 +91,7 @@ export default function App() {
             placeholder="magnet:?xt=urn:btih:..."
             aria-label="Magnet-ссылка"
           />
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={addMagnetM.isPending || !magnet.trim()}
-          >
+          <Button variant="primary" type="submit" disabled={addMagnetM.isPending || !magnet.trim()}>
             {addMagnetM.isPending ? "Добавление" : "Добавить"}
           </Button>
         </form>
@@ -138,7 +127,7 @@ export default function App() {
           torrents={torrents.data ?? []}
           isLoading={torrents.isLoading}
           selectedTorrentId={selectedTorrentId}
-          onSelect={setSelectedTorrentId}
+          onSelect={(id) => setSelectedTorrentId(id)}
         />
         <TorrentDetails torrent={selectedTorrent} />
       </section>

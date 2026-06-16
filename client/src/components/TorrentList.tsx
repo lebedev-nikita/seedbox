@@ -14,19 +14,22 @@ export function TorrentList({
   torrents,
   isLoading,
   selectedTorrentId,
-  onSelect,
+  ...props
 }: {
   torrents: Torrent[];
   isLoading: boolean;
   selectedTorrentId: number | null;
-  onSelect: (id: number) => void;
+  onSelect(id: number | null): void;
 }) {
   const pauseM = usePauseM();
   const resumeM = useResumeM();
   const removeM = useRemoveM();
 
   const busyTorrentId =
-    pauseM.variables?.id ?? resumeM.variables?.id ?? removeM.variables?.id ?? null;
+    (pauseM.isPending && pauseM.variables?.id) ||
+    (resumeM.isPending && resumeM.variables?.id) ||
+    (removeM.isPending && removeM.variables?.id) ||
+    null;
 
   if (isLoading) {
     return <Panel className="p-4">Загрузка раздач...</Panel>;
@@ -42,7 +45,7 @@ export function TorrentList({
     <Panel className="overflow-hidden" aria-label="Раздачи">
       {torrents.map((torrent) => {
         const isSelected = torrent.id === selectedTorrentId;
-        const canPause = torrent.statusCode !== 0;
+        const canPause = torrent.status != "stopped";
         const isBusy = busyTorrentId === torrent.id;
 
         return (
@@ -51,7 +54,7 @@ export function TorrentList({
             className={`grid cursor-pointer gap-2.5 border-b border-slate-200 p-3.5 last:border-b-0 ${
               isSelected ? "bg-teal-50" : "bg-white"
             }`}
-            onClick={() => onSelect(torrent.id)}
+            onClick={() => props.onSelect(torrent.id)}
           >
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
@@ -97,7 +100,10 @@ export function TorrentList({
                   variant="danger"
                   type="button"
                   disabled={isBusy}
-                  onClick={() => removeM.mutate({ id: torrent.id, deleteLocalData: false })}
+                  onClick={async () => {
+                    await removeM.mutateAsync({ id: torrent.id, deleteLocalData: false });
+                    props.onSelect(null);
+                  }}
                 >
                   Убрать
                 </Button>
@@ -105,9 +111,10 @@ export function TorrentList({
                   variant="danger"
                   type="button"
                   disabled={isBusy}
-                  onClick={() => {
+                  onClick={async () => {
                     if (confirm("Удалить раздачу вместе с файлами?")) {
-                      removeM.mutate({ id: torrent.id, deleteLocalData: true });
+                      await removeM.mutateAsync({ id: torrent.id, deleteLocalData: true });
+                      props.onSelect(null);
                     }
                   }}
                 >
