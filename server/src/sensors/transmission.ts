@@ -48,6 +48,11 @@ export type TorrentFileInfo = TorrentFile & {
   percentDone: number;
 };
 
+export type TransmissionStatus = {
+  running: boolean;
+  message?: string;
+};
+
 const torrentFields = [
   "id",
   "name",
@@ -205,6 +210,18 @@ export async function listTorrents() {
   });
 
   return result.torrents.map(summarizeTorrent);
+}
+
+export async function getTransmissionStatus(): Promise<TransmissionStatus> {
+  try {
+    await callTransmission("session-get");
+    return { running: true };
+  } catch (error) {
+    return {
+      running: false,
+      message: error instanceof Error ? error.message : "Transmission RPC is unavailable",
+    };
+  }
 }
 
 export async function getTorrentFiles(id: number) {

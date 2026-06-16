@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { useSetDownloadDirM, useStorageSettings, useTorrents } from "../hooks/api";
+import {
+  useSetDownloadDirM,
+  useStorageSettings,
+  useTorrents,
+  useTransmissionStatus,
+  useUploadTorrentM,
+} from "../hooks/api";
 import { trpc } from "../trpc";
 import { StatusMessage } from "./StatusMessage";
 import { StorageSelector } from "./StorageSelector";
 import { TorrentDetails } from "./TorrentDetails";
 import { TorrentList } from "./TorrentList";
+import { TransmissionStatus } from "./TransmissionStatus";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 
@@ -12,6 +19,7 @@ export default function App() {
   const utils = trpc.useUtils();
   const storage = useStorageSettings();
   const torrents = useTorrents();
+  const transmissionStatus = useTransmissionStatus();
   const [selectedTorrentId, setSelectedTorrentId] = useState<number | null>(null);
   const [magnet, setMagnet] = useState("");
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -31,48 +39,41 @@ export default function App() {
   const selectedTorrent =
     torrents.data?.find((torrent) => torrent.id === selectedTorrentId) ?? null;
 
+  const uploadTorrentM = useUploadTorrentM();
+
   const handleUpload = async (file: File | null) => {
     if (!file) return;
 
-    const formData = new FormData();
-    formData.set("file", file);
-    if (activeDownloadDir) {
-      formData.set("downloadDir", activeDownloadDir);
-    }
-
     setUploading(true);
     setUploadError(null);
-    try {
-      const response = await fetch("/api/torrents/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
-        throw new Error(payload.error ?? "Failed to upload torrent");
-      }
-      await utils.torrents.list.invalidate();
-    } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
+    await uploadTorrentM.mutateAsync({ file, activeDownloadDir });
+    setUploading(false);
   };
 
   return (
     <main className="mx-auto min-h-svh w-full max-w-[1440px] bg-slate-50 p-4 text-slate-800 sm:p-6">
       <header className="mb-5 grid items-start gap-6 lg:flex lg:justify-between">
         <div>
-          <h1 className="text-3xl leading-tight font-semibold text-slate-950">Seedbox</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl leading-tight font-semibold text-slate-950">Seedbox</h1>
+            <TransmissionStatus
+              className="mt-1.5"
+              isLoading={transmissionStatus.isLoading}
+              running={transmissionStatus.data?.running}
+              message={transmissionStatus.data?.message ?? transmissionStatus.error?.message}
+            />
+          </div>
           <p className="mt-1 text-slate-500">Локальное управление Transmission на Raspberry Pi</p>
         </div>
-        <StorageSelector
-          activeDownloadDir={activeDownloadDir}
-          allowedDownloadDirs={storage.data?.allowedDownloadDirs ?? []}
-          isLoading={storage.isLoading}
-          isSaving={setDownloadDirM.isPending}
-          onChange={(downloadDir) => setDownloadDirM.mutate({ downloadDir })}
-        />
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end">
+          <StorageSelector
+            activeDownloadDir={activeDownloadDir}
+            allowedDownloadDirs={storage.data?.allowedDownloadDirs ?? []}
+            isLoading={storage.isLoading}
+            isSaving={setDownloadDirM.isPending}
+            onChange={(downloadDir) => setDownloadDirM.mutate({ downloadDir })}
+          />
+        </div>
       </header>
 
       <section className="mb-3 grid gap-3 lg:grid-cols-[1fr_auto]" aria-label="Добавление торрента">
@@ -122,7 +123,10 @@ export default function App() {
         }
       />
 
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(420px,0.95fr)_minmax(480px,1.05fr)]">
+      <section
+        key="torrents"
+        className="grid items-start gap-4 xl:grid-cols-[minmax(420px,0.95fr)_minmax(480px,1.05fr)]"
+      >
         <TorrentList
           torrents={torrents.data ?? []}
           isLoading={torrents.isLoading}

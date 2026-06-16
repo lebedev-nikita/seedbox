@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { trpc } from "../trpc";
 
 export function useStorageSettings() {
@@ -6,6 +7,12 @@ export function useStorageSettings() {
 
 export function useTorrents() {
   return trpc.torrents.list.useQuery(undefined, {
+    refetchInterval: 2500,
+  });
+}
+
+export function useTransmissionStatus() {
+  return trpc.transmission.status.useQuery(undefined, {
     refetchInterval: 2500,
   });
 }
@@ -58,6 +65,34 @@ export function useRemoveM() {
   return trpc.torrents.remove.useMutation({
     onSuccess: () => {
       utils.torrents.list.invalidate();
+    },
+  });
+}
+
+export function useUploadTorrentM() {
+  const utils = trpc.useUtils();
+
+  return useMutation({
+    mutationKey: ["api", "torrents", "upload"],
+    mutationFn: async (input: { file: File; activeDownloadDir: string | null }) => {
+      const formData = new FormData();
+      formData.set("file", input.file);
+      if (input.activeDownloadDir) {
+        formData.set("downloadDir", input.activeDownloadDir);
+      }
+
+      const response = await fetch("/api/torrents/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? "Failed to upload torrent");
+      }
+    },
+    async onSuccess() {
+      await utils.torrents.list.invalidate();
     },
   });
 }

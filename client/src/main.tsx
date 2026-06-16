@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { keepPreviousData, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpLink } from "@trpc/client";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -6,7 +6,13 @@ import App from "./components/App.tsx";
 import "./index.css";
 import { trpc } from "./trpc";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      placeholderData: keepPreviousData,
+    },
+  },
+});
 
 const trpcClient = trpc.createClient({
   links: [httpLink({ url: "/api/trpc" })],
@@ -14,8 +20,10 @@ const trpcClient = trpc.createClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <App />
-    </trpc.Provider>
+    <QueryClientProvider client={queryClient}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <App />
+      </trpc.Provider>
+    </QueryClientProvider>
   </StrictMode>,
 );

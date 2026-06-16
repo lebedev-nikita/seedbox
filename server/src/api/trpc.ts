@@ -7,6 +7,7 @@ import {
 } from "../sensors/storage";
 import {
   addMagnet,
+  getTransmissionStatus,
   getTorrentFiles,
   listTorrents,
   removeTorrent,
@@ -34,6 +35,12 @@ export const appRouter = router({
           allowedDownloadDirs: env.SEEDBOX_ALLOWED_DOWNLOAD_DIRS,
         };
       }),
+  }),
+
+  transmission: router({
+    status: procedure.query(async () => {
+      return await getTransmissionStatus();
+    }),
   }),
 
   torrents: router({
