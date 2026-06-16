@@ -61,7 +61,7 @@ app.get("/api/torrents/:torrentId/files/:fileIndex/stream", async (c) => {
 async function serveTorrentFile(c: Context, disposition: "attachment" | "inline") {
   try {
     const torrentId = z.coerce.number().int().min(1).safeParse(c.req.param("torrentId"));
-    const fileIndex = z.coerce.number().int().min(1).safeParse(c.req.param("fileIndex"));
+    const fileIndex = z.coerce.number().int().min(0).safeParse(c.req.param("fileIndex"));
 
     if (!torrentId.success) {
       return c.json({ error: "Invalid torrent id" }, 400);

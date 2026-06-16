@@ -1,5 +1,9 @@
 {
+  "scripts": {
+    "dev": "concurrently '(cd server && bun run dev)' 'cd client && bun run dev'"
+  },
   "devDependencies": {
+    "concurrently": "^10.0.3",
     "prettier": "^3.8.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.8.0"
