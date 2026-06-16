@@ -5,6 +5,7 @@ export const env = getEnv();
 
 function getEnv() {
   const EnvSchema = z.object({
+    NODE_ENV: z.enum(["production", "development"]),
     SEEDBOX_ALLOWED_DOWNLOAD_DIRS: z
       .string()
       .transform((str) => str.split(",").map((dir) => path.resolve(dir)))
